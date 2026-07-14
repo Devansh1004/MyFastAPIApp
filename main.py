@@ -1,18 +1,24 @@
 from typing import Optional
 from fastapi import Body, FastAPI
-from pydantic import BaseModel
-from random import randint
+from pydantic import BaseModel, Field
+import random
+import time
 
 app = FastAPI()
 
+def generate_random_id(): 
+    random.seed(int(time.time()))
+    return random.randint(0,1000000000)
 class PostSchema(BaseModel):
     title: str
     content: str
     published: Optional[bool] = True
-    id: int
+    id: int = Field(default_factory = generate_random_id)
     
-my_posts = [{"title":"post 1", "content":"content 1", "id":1},
-            {"title":"post 2", "content":"content 2", "id":2}]
+    
+my_posts = [
+    PostSchema(title="Post 1", content="Content 1")
+    ]
 
 @app.get("/")
 async def root():
@@ -25,6 +31,6 @@ def get_posts():
 @app.post("/posts")
 def create_post(post: PostSchema):
     post_dict = post.model_dump()
-    post_dict['id'] = randint(0,100000000)
+    post_dict['id'] = generate_random_id()
     my_posts.append(post_dict)
-    return {"data": post_dict}
+    return {"data": post_dict, "length": len(my_posts)}
