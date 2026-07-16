@@ -20,11 +20,11 @@ my_posts = [
     PostSchema(title="Post 1", content="Content 1")
     ]
 
-def find_ppost_by_id(id: int):
-    for post in my_posts:
+def find_post_by_id(id: int):
+    for i,post in enumerate(my_posts):
         if post.id == id:
-            return post
-    return None
+            return i,post
+    return (None, None)
 
 @app.get("/")
 async def root():
@@ -47,7 +47,7 @@ def get_latest():
 
 @app.get("/posts/{id}")
 def get_post_by_id(id: int, response: Response):
-    post = find_ppost_by_id(id)
+    _,post = find_post_by_id(id)
     if post == None:
         # response.status_code = status.HTTP_404_NOT_FOUND
         # return {"message" : "post not found"}
@@ -55,3 +55,12 @@ def get_post_by_id(id: int, response: Response):
                             "Post not found")
     else:
         return {"Post": post}
+    
+@app.delete("/posts/{id}")
+def delete_post_by_id(id: int, response: Response):
+    i,_ = find_post_by_id(id)
+    if i == None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND)
+    else:
+        raise HTTPException(status.HTTP_204_NO_CONTENT)
+    
