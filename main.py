@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import Body, FastAPI
+from fastapi import Body, FastAPI, Response, status, HTTPException
 from pydantic import BaseModel, Field
 import random
 import time
@@ -20,6 +20,12 @@ my_posts = [
     PostSchema(title="Post 1", content="Content 1")
     ]
 
+def find_ppost_by_id(id: int):
+    for post in my_posts:
+        if post.id == id:
+            return post
+    return None
+
 @app.get("/")
 async def root():
     return {"message": "Hello World, This is an API"}
@@ -30,7 +36,22 @@ def get_posts():
     
 @app.post("/posts")
 def create_post(post: PostSchema):
-    post_dict = post.model_dump()
-    post_dict['id'] = generate_random_id()
-    my_posts.append(post_dict)
-    return {"data": post_dict, "length": len(my_posts)}
+    post.id = generate_random_id()
+    my_posts.append(post)
+    return {"data": post, "length": len(my_posts)}
+
+@app.get("/posts/latest")
+def get_latest():
+    post = my_posts[-1]
+    return {"message": post}
+
+@app.get("/posts/{id}")
+def get_post_by_id(id: int, response: Response):
+    post = find_ppost_by_id(id)
+    if post == None:
+        # response.status_code = status.HTTP_404_NOT_FOUND
+        # return {"message" : "post not found"}
+        raise HTTPException(status.HTTP_404_NOT_FOUND, 
+                            "Post not found")
+    else:
+        return {"Post": post}
