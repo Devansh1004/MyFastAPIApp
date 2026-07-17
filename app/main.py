@@ -64,5 +64,13 @@ def delete_post_by_id(id: int, response: Response):
     else:
         raise HTTPException(status.HTTP_204_NO_CONTENT)
     
-# any change in main
     
+@app.put("/posts/{id}")
+def update_posts(id: int, post: PostSchema):
+    index, old_post = find_post_by_id(id)
+    if old_post == None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, 
+                            "Post not found")
+    my_posts[index] = post
+    print(post)
+    return {"message": "Updated post"}
